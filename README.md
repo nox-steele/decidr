@@ -37,6 +37,23 @@ Decidr helps you:
 
 Open `index.html` directly in browser — no server needed.
 
+## Rollback
+
+If something breaks, rollback to the last working version:
+
+```bash
+cd project-folder
+git log --oneline          # find the last good commit
+git reset --hard <commit>  # reset to that commit
+git push --force           # push the rollback
+```
+
+Example (rollback to commit `abc1234`):
+```bash
+git reset --hard abc1234
+git push --force
+```
+
 ## License
 
 MIT
