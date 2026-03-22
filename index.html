@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decidr</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card-bg: #ffffff;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --border: #e0e0e0;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --warning: #d97706;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    nav button {
+      background: none;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+    }
+
+    nav button:hover {
+      background: var(--bg);
+    }
+
+    nav button.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    main {
+      padding: 1.5rem 0;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state h2 {
+      font-size: 1.125rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      transition: box-shadow 0.15s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .badge.overdue {
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    .badge.due-soon {
+      background: #fffbeb;
+      color: var(--warning);
+    }
+
+    .badge.ok {
+      background: #f0fdf4;
+      color: var(--success);
+    }
+
+    .card-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .card-content {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.625rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card-bg);
+      transition: border-color 0.15s ease;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .help-text {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* Review Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 100;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h2 {
+      font-size: 1.125rem;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      line-height: 1;
+    }
+
+    .modal-body {
+      padding: 1.25rem;
+    }
+
+    .modal-footer {
+      padding: 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+
+    /* History comparison */
+    .comparison {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .comparison-item {
+      padding: 0.75rem;
+      border-radius: 6px;
+      background: var(--bg);
+    }
+
+    .comparison-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .comparison-value {
+      font-size: 0.875rem;
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .welcome-quote {
+      font-size: 0.95rem;
+      color: #0369a1;
+      font-style: italic;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Decidr</h1>
+      <nav>
+        <button class="active" data-view="dashboard">Home</button>
+        <button data-view="add">New Decision</button>
+        <button data-view="history">History</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Dashboard View -->
+    <section id="dashboard" class="view active">
+      <div class="welcome-banner">
+        <p class="welcome-quote">"Every decision is a story waiting to be told. Let's see how yours unfolds."</p>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div id="pending-list"></div>
+    </section>
+
+    <!-- Add Decision View -->
+    <section id="add" class="view">
+      <form id="decision-form">
+        <div class="form-group">
+          <label for="title">What are you deciding? *</label>
+          <input type="text" id="title" name="title" required placeholder="e.g., Whether to accept the new job offer">
+        </div>
+
+        <div class="form-group">
+          <label for="context">The backstory</label>
+          <textarea id="context" name="context" placeholder="What's going on? What options are you considering?"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="expected">What do you think will happen? *</label>
+          <textarea id="expected" name="expected" required placeholder="Your hypothesis about how this will play out..."></textarea>
+          <p class="help-text">Be honest — what outcome are you hoping for?</p>
+        </div>
+
+        <div class="form-group">
+          <label for="review-period">When should you check in? *</label>
+          <select id="review-period" name="reviewPeriod" required>
+            <option value="7">1 week</option>
+            <option value="14">2 weeks</option>
+            <option value="30" selected>1 month</option>
+            <option value="90">3 months</option>
+            <option value="180">6 months</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Log This Decision</button>
+      </form>
+    </section>
+
+    <!-- History View -->
+    <section id="history" class="view">
+      <div id="history-list"></div>
+    </section>
+  </main>
+
+  <!-- Review Modal -->
+  <div class="modal-overlay" id="review-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Check In</h2>
+        <button class="modal-close" id="close-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="review-title" class="card-title" style="margin-bottom: 1rem;"></p>
+        
+        <div class="comparison" style="margin-bottom: 1rem;">
+          <div class="comparison-item">
+            <div class="comparison-label">Expected</div>
+            <div class="comparison-value" id="review-expected"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="actual-outcome">So... what actually happened? *</label>
+          <textarea id="actual-outcome" required placeholder="How did things turn out?"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancel-review">Maybe Later</button>
+        <button class="btn btn-primary" id="save-review">Save Check-In</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    const STORAGE_KEY = 'decision-journal';
+    let decisions = [];
+    let currentReviewId = null;
+
+    // Load from LocalStorage
+    function loadDecisions() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      decisions = stored ? JSON.parse(stored) : [];
+    }
+
+    // Save to LocalStorage
+    function saveDecisions() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(decisions));
+    }
+
+    // Generate ID
+    function generateId() {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    // Get days until review
+    function getDaysUntilReview(decision) {
+      const reviewDate = new Date(decision.reviewDate);
+      const now = new Date();
+      return Math.ceil((reviewDate - now) / (1000 * 60 * 60 * 24));
+    }
+
+    // Format date
+    function formatDate(isoString) {
+      return new Date(isoString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    // Get badge class
+    function getBadgeClass(daysUntil) {
+      if (daysUntil < 0) return 'overdue';
+      if (daysUntil <= 3) return 'due-soon';
+      return 'ok';
+    }
+
+    // Get badge text
+    function getBadgeText(daysUntil) {
+      if (daysUntil < 0) return `${Math.abs(daysUntil)} days overdue`;
+      if (daysUntil === 0) return 'Due today';
+      if (daysUntil === 1) return 'Due tomorrow';
+      return `Due in ${daysUntil} days`;
+    }
+
+    // Get pending decisions (sorted by overdue)
+    function getPendingDecisions() {
+      const now = new Date();
+      return decisions
+        .filter(d => !d.actualOutcome)
+        .sort((a, b) => {
+          const aDays = getDaysUntilReview(a);
+          const bDays = getDaysUntilReview(b);
+          return aDays - bDays;
+        });
+    }
+
+    // Get reviewed decisions
+    function getReviewedDecisions() {
+      return decisions
+        .filter(d => d.actualOutcome)
+        .sort((a, b) => new Date(b.reviewDate) - new Date(a.reviewDate));
+    }
+
+    // Render stats
+    function renderStats() {
+      const pending = getPendingDecisions().length;
+      const reviewed = getReviewedDecisions().length;
+      const overdue = pending > 0 ? getPendingDecisions().filter(d => getDaysUntilReview(d) < 0).length : 0;
+
+      document.getElementById('stats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${pending}</div>
+          <div class="stat-label">In Progress</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${overdue}</div>
+          <div class="stat-label">Need Attention</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${reviewed}</div>
+          <div class="stat-label">Completed</div>
+        </div>
+      `;
+    }
+
+    // Render dashboard
+    function renderDashboard() {
+      renderStats();
+      const pending = getPendingDecisions();
+      const container = document.getElementById('pending-list');
+
+      if (pending.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h2>Looking good! 👋</h2>
+            <p>Nothing waiting for review. Ready to make a new decision?</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = pending.map(decision => {
+        const daysUntil = getDaysUntilReview(decision);
+        const badgeClass = getBadgeClass(daysUntil);
+        const badgeText = getBadgeText(daysUntil);
+
+        return `
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">${escapeHtml(decision.title)}</span>
+              <span class="badge ${badgeClass}">${badgeText}</span>
+            </div>
+            <div class="card-meta">
+              Made on ${formatDate(decision.decisionDate)} · Review by ${formatDate(decision.reviewDate)}
+            </div>
+            <div class="card-content">
+              <strong>Expected:</strong> ${escapeHtml(decision.expectedOutcome)}
+            </div>
+            <div class="card-actions">
+              <button class="btn btn-primary" onclick="openReviewModal('${decision.id}')">Check In</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render history
+    function renderHistory() {
+      const reviewed = getReviewedDecisions();
+      const container = document.getElementById('history-list');
+
+      if (reviewed.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h2>Your story is just beginning</h2>
+            <p>Decisions you review will show up here — complete with what you expected vs. what actually happened.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = reviewed.map(decision => `
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">${escapeHtml(decision.title)}</span>
+          </div>
+          <div class="card-meta">
+            Decided: ${formatDate(decision.decisionDate)} · Reviewed: ${formatDate(decision.reviewDate)}
+          </div>
+          <div class="comparison">
+            <div class="comparison-item">
+              <div class="comparison-label">Expected</div>
+              <div class="comparison-value">${escapeHtml(decision.expectedOutcome)}</div>
+            </div>
+            <div class="comparison-item">
+              <div class="comparison-label">Actual</div>
+              <div class="comparison-value">${escapeHtml(decision.actualOutcome)}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Navigation
+    function showView(viewId) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(viewId).classList.add('active');
+
+      document.querySelectorAll('nav button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === viewId);
+      });
+
+      if (viewId === 'dashboard') renderDashboard();
+      if (viewId === 'history') renderHistory();
+    }
+
+    // Modal functions
+    function openReviewModal(id) {
+      const decision = decisions.find(d => d.id === id);
+      if (!decision) return;
+
+      currentReviewId = id;
+      document.getElementById('review-title').textContent = decision.title;
+      document.getElementById('review-expected').textContent = decision.expectedOutcome;
+      document.getElementById('actual-outcome').value = '';
+      document.getElementById('review-modal').classList.add('active');
+    }
+
+    function closeReviewModal() {
+      currentReviewId = null;
+      document.getElementById('review-modal').classList.remove('active');
+    }
+
+    // Add decision
+    function addDecision(data) {
+      const decisionDate = new Date();
+      const reviewPeriod = parseInt(data.reviewPeriod, 10);
+      const reviewDate = new Date(decisionDate.getTime() + reviewPeriod * 24 * 60 * 60 * 1000);
+
+      const decision = {
+        id: generateId(),
+        title: data.title,
+        context: data.context,
+        expectedOutcome: data.expected,
+        decisionDate: decisionDate.toISOString(),
+        reviewDate: reviewDate.toISOString(),
+        actualOutcome: ''
+      };
+
+      decisions.push(decision);
+      saveDecisions();
+    }
+
+    // Save review
+    function saveReview() {
+      const actualOutcome = document.getElementById('actual-outcome').value.trim();
+      if (!actualOutcome) return;
+
+      const decision = decisions.find(d => d.id === currentReviewId);
+      if (!decision) return;
+
+      decision.actualOutcome = actualOutcome;
+      decision.reviewDate = new Date().toISOString();
+      saveDecisions();
+
+      closeReviewModal();
+      renderDashboard();
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDecisions();
+      renderDashboard();
+
+      // Navigation
+      document.querySelectorAll('nav button').forEach(btn => {
+        btn.addEventListener('click', () => showView(btn.dataset.view));
+      });
+
+      // Add decision form
+      document.getElementById('decision-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        addDecision(Object.fromEntries(formData));
+        e.target.reset();
+        showView('dashboard');
+      });
+
+      // Modal
+      document.getElementById('close-modal').addEventListener('click', closeReviewModal);
+      document.getElementById('cancel-review').addEventListener('click', closeReviewModal);
+      document.getElementById('save-review').addEventListener('click', saveReview);
+
+      // Close modal on overlay click
+      document.getElementById('review-modal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeReviewModal();
+      });
+    });
+  </script>
+</body>
+</html>
